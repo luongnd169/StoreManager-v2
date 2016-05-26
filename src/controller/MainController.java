@@ -7,6 +7,7 @@ import java.util.StringTokenizer;
 
 import dao.ItemDAO;
 import dao.ItemDetailDAO;
+import data.Data;
 import dao.BillDAO;
 import dao.BillDetailDAO;
 import gui.Main;
@@ -30,12 +31,11 @@ public class MainController {
 	}
 
 	public void saveBill(List<Item> listItem, List<ItemDetail> listItemDetail, Customer c, String type) {
-		String nextBill = BillDAO.getNextBill(type);
-		List<Item> list = ItemDAO.getItemes();
+		String nextBill = Data.getNextBill(type);
+		List<Item> list = new ArrayList<>();
+		Data.listItem.addAll(list);
 		List<Item> temp = new ArrayList<>();
-		for (Item i : listItem) {
-			temp.add(i);
-		}
+		listItem.addAll(temp);
 		Bill bill = new Bill();
 		bill.setBillNo(nextBill);
 		int totalPrice = 0;
@@ -45,8 +45,7 @@ public class MainController {
 		bill.setDate(Convert.formatDateSQL(new Date()));
 		bill.setTotalPrice(totalPrice + "");
 		bill.setCustomerPhone(c.getPhone());
-		System.out.println(bill.toString());
-		BillDAO.insert(bill);
+		Data.listBill.add(bill);
 		BillDetail detail = new BillDetail();
 		detail.setBillNo(nextBill);
 		detail.setDate(bill.getDate());
@@ -54,7 +53,7 @@ public class MainController {
 			detail.setName(i.getName());
 			detail.setPrice(i.getPrice());
 			detail.setQuantity(i.getQuantity());
-			BillDetailDAO.insert(detail);
+			Data.listBillDetail.add(detail);
 		}
 		for (Item i1 : list) {
 			for (Item i2 : listItem) {
@@ -75,25 +74,22 @@ public class MainController {
 			}
 		}
 		for (ItemDetail id : listItemDetail) {
-
 			if (type.equals("X")) {
 				id.setCustomer(c.getCustomerId());
 				id.setStatus(false);
 				id.setExportDate(Convert.formatDateSQL(new Date()));
-				ItemDetailDAO.update(id);
+				Data.updateItemDetail(id);
 			} else {
 				id.setProvider(c.getCustomerId());
 				id.setStatus(true);
 				id.setImportDate(Convert.formatDateSQL(new Date()));
-				ItemDetailDAO.insert(id);
+				Data.listItemDetail.add(id);
 			}
 
 		}
-		// sửa giá bình quân
 		for (Item i : temp) {
 			int updatePrice = 0;
-			List<ItemDetail> listDetail = ItemDetailDAO
-					.getItemDetail("From ItemDetail where itemId = " + i.getItemId() + " and status = 1");
+			List<ItemDetail> listDetail = Data.getItemDetailByStatus(i.getItemId(), true);
 			if (!listDetail.isEmpty()) {
 				for (ItemDetail id : listDetail) {
 					updatePrice += Integer.parseInt(id.getImportPrice());
@@ -103,7 +99,7 @@ public class MainController {
 
 		}
 		for (Item i : temp) {
-			ItemDAO.update(i);
+			Data.updateItem(i);
 		}
 
 	}

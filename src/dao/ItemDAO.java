@@ -15,12 +15,21 @@ public class ItemDAO {
 		try {
 			Session session = utils.getSession();
 			session.beginTransaction();
-			Item Item = (Item) session.get(Item.class, id);
+			Item item = (Item) session.get(Item.class, id);
 			session.beginTransaction().commit();
-			return Item;
+			return item;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	public static Item getItemByName(String name) {
+		List<Item> temp = getItem("From Item where name = '" + name + "'");
+		if (temp.isEmpty()) {
+			return null;
+		} else {
+			return temp.get(0);
 		}
 	}
 

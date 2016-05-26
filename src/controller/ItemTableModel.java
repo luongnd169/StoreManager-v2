@@ -1,5 +1,6 @@
 package controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -19,6 +20,7 @@ public class ItemTableModel extends AbstractTableModel {
 	@SuppressWarnings("rawtypes")
 	private Vector tbData;
 	String[] colsName = { "Tên sản phẩm", "Loại", "Số lượng", "Đơn giá", "Thành tiền" };
+	public static List<Item> listItem = new ArrayList<>();
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ItemTableModel(List<Item> list) {
@@ -34,11 +36,11 @@ public class ItemTableModel extends AbstractTableModel {
 			dataRow.addElement(list.get(i).getName());
 			dataRow.addElement(list.get(i).getType());
 			dataRow.addElement(list.get(i).getQuantity());
-			dataRow.addElement(list.get(i).getPrice());
+			dataRow.addElement(Convert.numberToString(list.get(i).getPrice()));
 			dataRow.addElement(Convert.numberToString(
 					Integer.parseInt(Convert.stringToNumber(list.get(i).getPrice())) * list.get(i).getQuantity() + ""));
 			tbData.addElement(dataRow);
-
+			listItem.addAll(list);
 		}
 	}
 

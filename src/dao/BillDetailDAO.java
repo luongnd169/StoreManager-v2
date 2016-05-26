@@ -9,7 +9,7 @@ import model.BillDetail;
 public class BillDetailDAO {
 	private static HibernateUtils utils = new HibernateUtils();
 
-	public static BillDetail getSaleBillDetail(int id) {
+	public static BillDetail getBillDetail(int id) {
 		try {
 			Session session = utils.getSession();
 			session.beginTransaction();
@@ -22,12 +22,12 @@ public class BillDetailDAO {
 		}
 	}
 
-	public static List<BillDetail> getSaleBillDetails() {
+	public static List<BillDetail> getBillDetails() {
 		try {
 			Session session = utils.getSession();
 			session.beginTransaction();
 			@SuppressWarnings("unchecked")
-			List<BillDetail> list = session.createQuery("FROM SaleBillDetail").list();
+			List<BillDetail> list = session.createQuery("FROM BillDetail").list();
 			session.beginTransaction().commit();
 			return list;
 		} catch (Exception e) {
@@ -51,32 +51,32 @@ public class BillDetailDAO {
 		}
 	}
 
-	public static void insert(BillDetail SaleBillDetail) {
-		process(SaleBillDetail, "insert");
+	public static void insert(BillDetail billDetail) {
+		process(billDetail, "insert");
 	}
 
-	public static void update(BillDetail SaleBillDetail) {
-		process(SaleBillDetail, "update");
+	public static void update(BillDetail billDetail) {
+		process(billDetail, "update");
 	}
 
-	public static void delete(BillDetail SaleBillDetail) {
-		process(SaleBillDetail, "delete");
+	public static void delete(BillDetail billDetail) {
+		process(billDetail, "delete");
 	}
 
-	private static void process(BillDetail SaleBillDetail, String mode) {
+	private static void process(BillDetail billDetail, String mode) {
 		try {
 			Session session = utils.getSession();
 			session.beginTransaction();
 
 			switch (mode) {
 			case "insert":
-				session.save(SaleBillDetail);
+				session.save(billDetail);
 				break;
 			case "update":
-				session.update(SaleBillDetail);
+				session.update(billDetail);
 				break;
 			case "delete":
-				session.delete(SaleBillDetail);
+				session.delete(billDetail);
 				break;
 			}
 

@@ -5,18 +5,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import dao.ItemDAO;
-import dao.ItemDetailDAO;
 import data.Data;
-import dao.BillDAO;
-import dao.BillDetailDAO;
 import gui.Main;
 import lib.Convert;
+import model.Bill;
+import model.BillDetail;
 import model.Customer;
 import model.Item;
 import model.ItemDetail;
-import model.Bill;
-import model.BillDetail;
 
 public class MainController {
 
@@ -26,9 +22,9 @@ public class MainController {
 
 	}
 
-	public void addItemToList(List<Item> listItem, String name) {
-		listItem.add(ItemDAO.getItem("FROM Item where name = '" + name + "'").get(0));
-	}
+//	public void addItemToList(List<Item> listItem, String name) {
+//		listItem.add(ItemDAO.getItem("FROM Item where name = '" + name + "'").get(0));
+//	}
 
 	public void saveBill(List<Item> listItem, List<ItemDetail> listItemDetail, Customer c, String type) {
 		String nextBill = Data.getNextBill(type);
@@ -116,10 +112,11 @@ public class MainController {
 
 	public List<Item> searchItemByImei(String imei) {
 		List<Item> temp = new ArrayList<>();
-		if (ItemDetailDAO.getItemDetail("From ItemDetail where imei ='" + imei + "'") != null) {
-			ItemDetail id = ItemDetailDAO.getItemDetail("From ItemDetail where imei ='" + imei + "'").get(0);
-			Item i = ItemDAO.getItem(id.getItemId());
-			temp.add(i);
+		for (ItemDetail id : Data.listItemDetail) {
+			if (id.getImei().equals(imei)) {
+				Item i = Data.getItem(id.getItemId());
+				temp.add(i);
+			}
 		}
 		return temp;
 	}

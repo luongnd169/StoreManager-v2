@@ -13,7 +13,7 @@ public class MouseListener extends MouseAdapter {
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		Point point = e.getPoint();
-		int col = main.getTableTonKho().columnAtPoint(point);
+//		int col = main.getTableTonKho().columnAtPoint(point);
 	}
 
 }

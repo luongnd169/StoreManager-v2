@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -20,9 +21,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
-import dao.CustomerDAO;
+import controller.ItemTableModel;
 import dao.ItemDAO;
-import dao.ItemDetailDAO;
+import data.Data;
 import lib.Convert;
 import model.Customer;
 import model.Item;
@@ -41,6 +42,7 @@ public class AddItem extends JFrame {
 	private JTextField txtSoLuong;
 	private JButton btnLuu;
 	private JButton btnHuy;
+	Main main = new Main();
 
 	public JTextField getTxtTenSanPham() {
 		return txtTenSanPham;
@@ -110,14 +112,14 @@ public class AddItem extends JFrame {
 		this.btnHuy = btnHuy;
 	}
 
-	public AddItem() {
-		initialize();
+	public AddItem(List<Item> listStorage) {
+		initialize(listStorage);
 		tranfer();
 		disposeFrame();
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void initialize() {
+	private void initialize(final List<Item> listStorage) {
 
 		setBounds(100, 100, 400, 300);
 		getContentPane().setLayout(null);
@@ -141,7 +143,7 @@ public class AddItem extends JFrame {
 		comboBoxLoai = new JComboBox();
 		comboBoxLoai.setBounds(120, 51, 90, 20);
 		List<String> types = Main.getTypes();
-		for(String s : types){
+		for (String s : types) {
 			comboBoxLoai.addItem(s);
 		}
 		getContentPane().add(comboBoxLoai);
@@ -174,8 +176,8 @@ public class AddItem extends JFrame {
 
 		comboBoxNhaCungCap = new JComboBox();
 		comboBoxNhaCungCap.setBounds(120, 140, 210, 20);
-		List<Customer> listCustomer = CustomerDAO.getCustomer("From Customer where provider = 1");
-		for (Customer c : listCustomer) {
+		List<Customer> listProvider = Data.getCustomer(true);
+		for (Customer c : listProvider) {
 			comboBoxNhaCungCap.addItem(c.getName());
 		}
 		getContentPane().add(comboBoxNhaCungCap);
@@ -196,7 +198,7 @@ public class AddItem extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				saveItem();
+				saveItem(listStorage);
 
 			}
 		});
@@ -209,6 +211,7 @@ public class AddItem extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				dispose();
+				main.resetStorage();
 			}
 		});
 		getContentPane().add(btnHuy);
@@ -271,7 +274,7 @@ public class AddItem extends JFrame {
 
 	}
 
-	private void saveItem() {
+	private void saveItem(List<Item> listStorage) {
 		Integer itemId = -1;
 		String name = txtTenSanPham.getText();
 		String type = comboBoxLoai.getSelectedItem().toString();
@@ -306,15 +309,14 @@ public class AddItem extends JFrame {
 					item.setItemId(itemId);
 					item.setQuantity(quantity);
 					item.setPrice(price);
-					ItemDAO.insert(item);
+					Data.listItem.add(item);
 				} else {
-					Item i = ItemDAO.getItem("From Item where name ='" + name + "'").get(0);
+					Item i = Data.getItemByName(name);
 					itemId = i.getItemId();
 					item.setItemId(itemId);
 					item.setQuantity(i.getQuantity() + quantity);
 					int totalPrice = 0;
-					List<ItemDetail> listDetail = ItemDetailDAO
-							.getItemDetail("From ItemDetail where itemId = " + itemId);
+					List<ItemDetail> listDetail = Data.getDetails(itemId);
 					for (ItemDetail id : listDetail) {
 						totalPrice += Integer.parseInt(id.getImportPrice());
 					}
@@ -326,7 +328,7 @@ public class AddItem extends JFrame {
 						averagePrice = (totalPrice + Integer.parseInt(price)) / (listDetail.size() + 1);
 					}
 					item.setPrice(String.valueOf(averagePrice));
-					ItemDAO.update(item);
+					Data.updateItem(item);
 				}
 
 				ItemDetail itemDetail;
@@ -336,11 +338,9 @@ public class AddItem extends JFrame {
 					itemDetail.setImei(imeis[i]);
 					itemDetail.setImportDate(Convert.formatDateSQL(new Date()));
 					itemDetail.setImportPrice(price);
-					itemDetail.setProvider(
-							CustomerDAO.getCustomer("From Customer where name ='" + provider + "' and provider = 1")
-									.get(0).getCustomerId());
+					itemDetail.setProvider(Data.getCustomerByName(provider, false).getCustomerId());
 					itemDetail.setStatus(true);
-					ItemDetailDAO.insert(itemDetail);
+					Data.listItemDetail.add(itemDetail);
 				}
 				JOptionPane.showMessageDialog(null, "Lưu thành công");
 				return;

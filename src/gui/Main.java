@@ -44,7 +44,6 @@ import controller.MainController;
 import dao.CustomerDAO;
 import dao.FeeDAO;
 import dao.ItemDAO;
-import dao.ItemDetailDAO;
 import data.Data;
 import lib.Convert;
 import model.Customer;
@@ -55,14 +54,14 @@ import model.ItemDetail;
 public class Main {
 
 	private JFrame frame;
-	private JTable tableTonKho;
+	public static JTable tableTonKho;
 	@SuppressWarnings("rawtypes")
 	private JComboBox comboBoxTimSP, comboBoxSoLuong, comboBoxImei, comboKho, comboBoxSanPhamNhap, comboBoxNCC,
 			comboBoxLoaiNhap;
 	@SuppressWarnings("rawtypes")
 	private static JComboBox comboBoxKhachHang;
 	ComboBoxModel model;
-	MainController controller;
+	static MainController controller;
 	private List<Item> listSaleItem = new ArrayList<Item>();
 	private List<ItemDetail> listSaleItemDetail = new ArrayList<>();
 	private JTable tableXuat;
@@ -74,7 +73,6 @@ public class Main {
 	private JTextField txtTongTien;
 	private JRadioButton rdbtnTenSP;
 	private JRadioButton rdbtnSoImei;
-	int warehouse;
 	private JTextField txtSearch;
 	private JTextField txtTongTienKho;
 	private List<Item> listStorage;
@@ -116,7 +114,6 @@ public class Main {
 	private JCheckBox checkBoxNhap;
 	private JButton btnHuyNhap;
 	private static List<String> types;
-	private String totalImportPrice;
 	private List<Item> listImportItem = new ArrayList<>();
 	private List<ItemDetail> listImportItemDetail = new ArrayList<>();
 	private JTable tableNhap;
@@ -130,12 +127,12 @@ public class Main {
 		this.comboBoxTimSP = comboBoxTimSP;
 	}
 
-	public JTable getTableTonKho() {
-		return tableTonKho;
+	public List<Item> getListStorage() {
+		return listStorage;
 	}
 
-	public void setTableTonKho(JTable tableTonKho) {
-		this.tableTonKho = tableTonKho;
+	public void setListStorage(List<Item> listStorage) {
+		this.listStorage = listStorage;
 	}
 
 	public JTable getTableXuat() {
@@ -179,8 +176,8 @@ public class Main {
 	 * Create the application.
 	 */
 	public Main() {
-		initData();
 		controller = new MainController();
+		initData();
 		initialize();
 		initKho();
 	}
@@ -208,7 +205,7 @@ public class Main {
 		panelTonKho.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				resetStorage(e);
+				resetStorage();
 			}
 		});
 		panelTonKho.setBounds(10, 0, 774, 560);
@@ -343,7 +340,7 @@ public class Main {
 		JButton btnThemMoi = new JButton("Thêm mới");
 		btnThemMoi.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				addItem = new AddItem();
+				addItem = new AddItem(listStorage);
 			}
 		});
 		btnThemMoi.setBounds(10, 85, 89, 23);
@@ -938,8 +935,8 @@ public class Main {
 	}
 
 	public void initData() {
-		listStorage = new ArrayList<Item>();
-		listStorage = ItemDAO.getItemes();
+		setListStorage(new ArrayList<Item>());
+		setListStorage(ItemDAO.getItemes());
 
 		listFee = new ArrayList<>();
 		listFee = FeeDAO.getFees();
@@ -947,7 +944,7 @@ public class Main {
 
 		setListProvider(CustomerDAO.getCustomer("From Customer where provider = 1"));
 
-		for (Item i : Convert.returnListItem(listStorage)) {
+		for (Item i : Convert.returnListItem(getListStorage())) {
 			tongTienKho += Integer.parseInt(i.getPrice()) * i.getQuantity();
 		}
 
@@ -978,17 +975,16 @@ public class Main {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (e.getActionCommand().equals("Thêm")) {
-					addItem = new AddItem();
+					addItem = new AddItem(listStorage);
 					addItem.getComboBoxLoai().transferFocus();
 					addItem.getComboBoxLoai().setEnabled(false);
 					addItem.getTxtTenSanPham()
 							.setText(ItemTableModel.listItem.get(tableTonKho.getSelectedRow()).getName());
 					addItem.getTxtTenSanPham().setEditable(false);
 				} else if (e.getActionCommand().equals("Sửa")) {
-					Item selectedItem = listStorage.get(tableTonKho.getSelectedRow());
+					Item selectedItem = getListStorage().get(tableTonKho.getSelectedRow());
 					selectedItem = ItemDAO.getItem(selectedItem.getItemId());
-					List<ItemDetail> listDetail = ItemDetailDAO.getItemDetail(
-							"From ItemDetail where itemId = " + selectedItem.getItemId() + " and status = 1");
+					List<ItemDetail> listDetail = Data.getItemDetailByStatus(selectedItem.getItemId(), true);
 					editItem = new EditItem(listDetail);
 					editItem.getTxtMaSP().transferFocus();
 					editItem.getTxtMaSP().setEditable(false);
@@ -996,7 +992,6 @@ public class Main {
 					editItem.getTxtTenSP().setText(selectedItem.getName());
 					editItem.getTxtSoLuongTon().setText(selectedItem.getQuantity() + "");
 					editItem.getTxtGiaBinhQuan().setText(selectedItem.getPrice());
-
 				} else if (e.getActionCommand().equals("Xóa")) {
 
 				}
@@ -1019,62 +1014,47 @@ public class Main {
 
 	}
 
-	private void resetStorage(MouseEvent e) {
-		Data.listItem.addAll(listStorage);
-		tableTonKho.setModel(new ItemTableModel(listStorage));
-		if (comboKho.getSelectedItem().toString().equals("Tất cả")) {
-			Data.listItem.addAll(listStorage);
-			tableTonKho.setModel(new ItemTableModel(listStorage));
-			tongTienKho = 0;
-			for (Item i : listStorage) {
-				tongTienKho += Integer.parseInt(i.getPrice()) * i.getQuantity();
-			}
-			txtTongTienKho.setText(Convert.numberToString(String.valueOf(tongTienKho)));
-		} else {
-			String type = comboKho.getSelectedItem().toString();
-			listStorage = Data.getItemByType(type);
-			tableTonKho.setModel(new ItemTableModel(listStorage));
-			tongTienKho = 0;
-			for (Item i : listStorage) {
-				tongTienKho += Integer.parseInt(i.getPrice()) * i.getQuantity();
-			}
-			txtTongTienKho.setText(Convert.numberToString(String.valueOf(tongTienKho)));
+	public void resetStorage() {
+		listStorage = new ArrayList<>();
+		String type = comboKho.getSelectedItem().toString();
+		setListStorage(Data.getItemByType(type));
+		System.out.println("size: " + getListStorage().size());
+		tableTonKho.setModel(new ItemTableModel(getListStorage()));
+		tongTienKho = 0;
+		for (Item i : getListStorage()) {
+			tongTienKho += Integer.parseInt(i.getPrice()) * i.getQuantity();
 		}
+		txtTongTienKho.setText(Convert.numberToString(String.valueOf(tongTienKho)));
 	}
 
 	private void selectStorageEvent(ItemEvent e) {
-		if (e.getItem().equals("Tất cả")) {
-			Data.listItem.addAll(listStorage);
-			tableTonKho.setModel(new ItemTableModel(listStorage));
-			tongTienKho = 0;
-			for (Item i : listStorage) {
-				tongTienKho += Integer.parseInt(i.getPrice()) * i.getQuantity();
-			}
-			txtTongTienKho.setText(Convert.numberToString(String.valueOf(tongTienKho)));
-		} else {
-			String type = e.getItem().toString();
-			listStorage = Data.getItemByType(type);
-			tableTonKho.setModel(new ItemTableModel(listStorage));
-			tongTienKho = 0;
-			for (Item i : Convert.returnListItem(listStorage)) {
-				tongTienKho += Integer.parseInt(i.getPrice()) * i.getQuantity();
-			}
-			txtTongTienKho.setText(Convert.numberToString(String.valueOf(tongTienKho)));
+		listStorage = new ArrayList<>();
+		String type = e.getItem().toString();
+		setListStorage(Data.getItemByType(type));
+		System.out.println("size: " + getListStorage().size());
+		tableTonKho.setModel(new ItemTableModel(getListStorage()));
+		tongTienKho = 0;
+		for (Item i : getListStorage()) {
+			tongTienKho += Integer.parseInt(i.getPrice()) * i.getQuantity();
 		}
+		txtTongTienKho.setText(Convert.numberToString(String.valueOf(tongTienKho)));
+
 	}
 
 	private void searchItemStorageEvent(KeyEvent e) {
 		if (txtSearch.getText().trim().equals("")) {
-			Data.listItem.addAll(listStorage);
-			tableTonKho.setModel(new ItemTableModel(listStorage));
+			listStorage = new ArrayList<>();
+			getListStorage().addAll(Data.listItem);
+			tableTonKho.setModel(new ItemTableModel(getListStorage()));
 		} else {
 			if (rdbtnTenSP.isSelected()) {
-				listStorage = controller.searchItemByName(ItemDAO.getItemes(), txtSearch.getText());
-				tableTonKho.setModel(new ItemTableModel(listStorage));
+				setListStorage(controller.searchItemByName(Data.getItemByType(comboKho.getSelectedItem().toString()),
+						txtSearch.getText()));
+				tableTonKho.setModel(new ItemTableModel(getListStorage()));
 			} else {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					listStorage = controller.searchItemByImei(txtSearch.getText());
-					tableTonKho.setModel(new ItemTableModel(listStorage));
+					setListStorage(controller.searchItemByImei(txtSearch.getText()));
+					tableTonKho.setModel(new ItemTableModel(getListStorage()));
 				}
 			}
 		}
@@ -1164,9 +1144,10 @@ public class Main {
 		JOptionPane.showMessageDialog(null, "Lưu hóa đơn thành công");
 		listSaleItem.removeAll(listSaleItem);
 		listSaleItemDetail.removeAll(listSaleItemDetail);
-		tableXuat.setModel(new ItemTableModel(Convert.convertListItem(listSaleItem)));
-		tableTonKho.setModel(new ItemTableModel(Convert.convertListItem(ItemDAO.getItemes())));
-		tableThongTin.setModel(new CustomerTableModel(CustomerDAO.getCustomers()));
+		tableXuat.setModel(new ItemTableModel(listSaleItem));
+		Data.listItem.addAll(getListStorage());
+		tableTonKho.setModel(new ItemTableModel(getListStorage()));
+		tableThongTin.setModel(new CustomerTableModel(Data.listPerson));
 		clearSale();
 	}
 
@@ -1182,9 +1163,7 @@ public class Main {
 
 	private void generateImportPrice() {
 		String imei = comboBoxImei.getSelectedItem().toString();
-		System.out.println("imei = " + imei);
-		String importPrice = ItemDetailDAO.getItemDetail("From ItemDetail where imei = '" + imei + "'").get(0)
-				.getImportPrice();
+		String importPrice = Data.getItemDetailByImei(imei).getImportPrice();
 		txtGiaNhap.setText(Convert.numberToString(importPrice));
 	}
 
@@ -1248,17 +1227,15 @@ public class Main {
 		c.setPhone(txtSDTNhap.getText());
 		c.setAddress(txtDiaChiNhap.getText());
 		c.setProvider(true);
-		c.setCustomerId(CustomerDAO.getId(comboBoxNCC.getSelectedItem().toString(), "provider"));
+		c.setCustomerId(Data.getPersonId(c.getName(), true));
 		controller = new MainController();
-		for (Item i : listImportItem) {
-			i.setPrice(Convert.stringToNumber(i.getPrice()));
-		}
 		controller.saveBill(listImportItem, listImportItemDetail, c, "N");
 		JOptionPane.showMessageDialog(null, "Lưu hóa đơn thành công");
 		listImportItem.removeAll(listImportItem);
 		listImportItemDetail.removeAll(listImportItemDetail);
-		tableNhap.setModel(new ItemTableModel(Convert.convertListItem(listSaleItem)));
-		tableTonKho.setModel(new ItemTableModel(Convert.convertListItem(ItemDAO.getItemes())));
+		tableNhap.setModel(new ItemTableModel(listSaleItem));
+		Data.listItem.addAll(getListStorage());
+		tableTonKho.setModel(new ItemTableModel(getListStorage()));
 		clearImport();
 
 	}
@@ -1274,9 +1251,7 @@ public class Main {
 
 	private void showCustomer() {
 		if (!chckbxM.isSelected()) {
-			Customer customer = CustomerDAO
-					.getCustomer("From Customer where name = '" + comboBoxKhachHang.getSelectedItem().toString() + "'")
-					.get(0);
+			Customer customer = Data.getCustomerByName(comboBoxKhachHang.getSelectedItem().toString(), false);
 			if (customer != null) {
 				txtDienThoai.setText(customer.getPhone());
 				txtDiaChi.setText(customer.getAddress());
@@ -1285,8 +1260,7 @@ public class Main {
 	}
 
 	private void showProvider() {
-		Customer provider = CustomerDAO
-				.getCustomer("From Customer where name = '" + comboBoxNCC.getSelectedItem().toString() + "'").get(0);
+		Customer provider = Data.getCustomerByName(comboBoxNCC.getSelectedItem().toString(), true);
 		if (provider != null) {
 			txtSDTNhap.setText(provider.getPhone());
 			txtDiaChiNhap.setText(provider.getAddress());
@@ -1304,7 +1278,7 @@ public class Main {
 			txtDiaChi.setEditable(true);
 		} else {
 			comboBoxKhachHang.setEditable(false);
-			List<Customer> listCustomer = CustomerDAO.getCustomers();
+			List<Customer> listCustomer = Data.getCustomer(false);
 			if (!listCustomer.isEmpty()) {
 				for (Customer c : listCustomer) {
 					comboBoxKhachHang.addItem(c.getName());

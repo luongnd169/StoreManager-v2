@@ -26,9 +26,13 @@ public class Data {
 
 	public static List<Item> getItemByType(String type) {
 		List<Item> temp = new ArrayList<>();
-		for (Item item : listItem) {
-			if (item.getType().equals(type)) {
-				temp.add(item);
+		if (type.equals("Tất cả")) {
+			temp.addAll(listItem);
+		} else {
+			for (Item item : listItem) {
+				if (item.getType().equals(type)) {
+					temp.add(item);
+				}
 			}
 		}
 		return temp;
@@ -62,6 +66,22 @@ public class Data {
 		return null;
 	}
 
+	public static List<Customer> getCustomer(boolean provider) {
+		List<Customer> temp = new ArrayList<>();
+		for (Customer c : listPerson) {
+			if (provider) {
+				if (c.isProvider()) {
+					temp.add(c);
+				}
+			} else {
+				if (!c.isProvider()) {
+					temp.add(c);
+				}
+			}
+		}
+		return temp;
+	}
+
 	public static Customer getCustomerByPhone(String phone) {
 		for (Customer c : listPerson) {
 			if (c.getPhone().equals(phone)) {
@@ -69,6 +89,22 @@ public class Data {
 			}
 		}
 		return null;
+	}
+
+	public static Customer getCustomerByName(String name, boolean provider) {
+		for (Customer c : listPerson) {
+			if (provider) {
+				if (c.getName().equals(name) && provider) {
+					return c;
+				}
+			} else {
+				if (c.getName().equals(name) && !provider) {
+					return c;
+				}
+			}
+		}
+		return null;
+
 	}
 
 	public static String getNextBill(String type) {
@@ -153,6 +189,28 @@ public class Data {
 		return temp;
 	}
 
+	public static Item getItem(int itemId) {
+		for (Item item : listItem) {
+			if (item.getItemId() == itemId) {
+				return item;
+			}
+		}
+		return null;
+	}
+
+	public static int getPersonId(String name, boolean provider) {
+		int id = 0;
+		for (Customer c : listPerson) {
+			if (provider) {
+				if (c.getName().equals(name) && provider) {
+					id = c.getCustomerId();
+				}
+			}
+		}
+
+		return id;
+	}
+
 	public static boolean updateItem(Item item) {
 		for (Item i : listItem) {
 			if (item.getItemId() == i.getItemId()) {
@@ -164,8 +222,6 @@ public class Data {
 	}
 
 	public static void main(String[] args) {
-		if (true && !false) {
-			System.out.println("a");
-		}
+		System.out.println(getItemByType("Điện thoại").size());
 	}
 }

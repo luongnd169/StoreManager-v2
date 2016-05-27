@@ -47,6 +47,11 @@ public class Data {
 		return null;
 	}
 
+	public static int getNextItemId() {
+		Item lastItem = listItem.get(listItem.size() - 1);
+		return lastItem.getItemId() + 1;
+	}
+
 	public static List<ItemDetail> getDetails(int itemId) {
 		List<ItemDetail> temp = new ArrayList<>();
 		for (ItemDetail detail : listItemDetail) {
@@ -132,7 +137,7 @@ public class Data {
 				billNo = getSaleBill().get(getSaleBill().size() - 1).getBillNo();
 				index = Integer.parseInt(billNo.substring(1));
 			} else {
-				index = 1;
+				index = 0;
 			}
 			nextBill = "X" + analyze(index);
 			break;
@@ -142,7 +147,7 @@ public class Data {
 				billNo = getPurchaseBill().get(getPurchaseBill().size() - 1).getBillNo();
 				index = Integer.parseInt(billNo.substring(1));
 			} else {
-				index = 1;
+				index = 0;
 			}
 			nextBill = "N" + analyze(index);
 			break;
@@ -237,8 +242,9 @@ public class Data {
 	public static boolean updateItem(Item item) {
 		for (Item i : listItem) {
 			if (item.getItemId() == i.getItemId()) {
-				i = item;
-				System.out.println(i.toString());
+				i.setPrice(item.getPrice());
+				i.setQuantity(i.getQuantity());
+				System.out.println("1 " + Data.listItem.get(0).toString());
 				return true;
 			}
 		}
@@ -246,6 +252,6 @@ public class Data {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(getCustomerByPhone("11111").getName());
+		System.out.println(getNextItemId());
 	}
 }

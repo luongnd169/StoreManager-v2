@@ -1002,6 +1002,8 @@ public class Main {
 	public void resetStorage() {
 		listStorage = new ArrayList<>();
 		String type = comboKho.getSelectedItem().toString();
+		System.out.println("A " + Data.getItemByType(type).size());
+		System.out.println("B " + Data.listItem.size());
 		listStorage = Data.getItemByType(type);
 		tableTonKho.setModel(new ItemTableModel(listStorage));
 		tongTienKho = 0;
@@ -1127,16 +1129,18 @@ public class Main {
 		} else {
 			c.setCustomerId(Data.getCustomerByPhone(c.getPhone()).getCustomerId());
 		}
-		controller = new MainController();
-		controller.saveBill(listSaleItem, listSaleItemDetail, c, "X");
+		MainController.saveBill(listSaleItem, listSaleItemDetail, c, "X");
 		JOptionPane.showMessageDialog(null, "Lưu hóa đơn thành công");
 		listSaleItem.removeAll(listSaleItem);
 		listSaleItemDetail.removeAll(listSaleItemDetail);
 		tableXuat.setModel(new ItemTableModel(listSaleItem));
-		Data.listItem.addAll(listStorage);
+		listStorage = new ArrayList<>();
+		listStorage.addAll(Data.listItem);
+		System.out.println(Data.listItem.size());
 		tableTonKho.setModel(new ItemTableModel(listStorage));
 		tableThongTin.setModel(new CustomerTableModel(Data.listPerson));
 		clearSale();
+		System.out.println(listStorage.size());
 	}
 
 	public void clearSale() {
@@ -1159,7 +1163,6 @@ public class Main {
 	private void searchImportItem(KeyEvent e) {
 		model = new ComboBoxModel();
 		String name = comboBoxSanPhamNhap.getEditor().getItem().toString();
-		System.out.println(name);
 		if (e.getKeyCode() >= 65 && e.getKeyCode() <= 90 || e.getKeyCode() >= 96 && e.getKeyCode() <= 105
 				|| e.getKeyCode() == 8) {
 			comboBoxSanPhamNhap.setModel(model.getList(name));
@@ -1180,10 +1183,12 @@ public class Main {
 		}
 		if (!txtGiaNhapNhap.getText().equals("")) {
 			String price = txtGiaNhapNhap.getText();
-			// String providerName = comboBoxNCC.getSelectedItem().toString();
-
 			Item item = new Item();
-			item.setItemId(ItemDAO.getId(name));
+			if (Data.getItemByName(name) != null) {
+				item.setItemId(Data.getItemByName(name).getItemId());
+			} else {
+				item.setItemId(Data.getNextItemId());
+			}
 			item.setName(name);
 			item.setType(type);
 			item.setQuantity(quantity);
@@ -1197,7 +1202,6 @@ public class Main {
 			detail.setImportPrice(price);
 			detail.setStatus(true);
 			detail.setImei(imei);
-			// detail.setProvider(CustomerDAO.getId(providerName));
 			listImportItemDetail.add(detail);
 			int total = 0;
 			for (Item i : listImportItem) {
@@ -1216,13 +1220,13 @@ public class Main {
 		c.setAddress(txtDiaChiNhap.getText());
 		c.setProvider(true);
 		c.setCustomerId(Data.getPersonId(c.getName(), true));
-		controller = new MainController();
-		controller.saveBill(listImportItem, listImportItemDetail, c, "N");
+		MainController.saveBill(listImportItem, listImportItemDetail, c, "N");
 		JOptionPane.showMessageDialog(null, "Lưu hóa đơn thành công");
-		listImportItem.removeAll(listImportItem);
-		listImportItemDetail.removeAll(listImportItemDetail);
-		tableNhap.setModel(new ItemTableModel(listSaleItem));
-		Data.listItem.addAll(listStorage);
+		listImportItem = new ArrayList<>();
+		listImportItemDetail = new ArrayList<>();
+		tableNhap.setModel(new ItemTableModel(listImportItem));
+		listStorage = new ArrayList<>();
+		listStorage.addAll(Data.listItem);
 		tableTonKho.setModel(new ItemTableModel(listStorage));
 		clearImport();
 

@@ -22,16 +22,17 @@ public class MainController {
 
 	}
 
-//	public void addItemToList(List<Item> listItem, String name) {
-//		listItem.add(ItemDAO.getItem("FROM Item where name = '" + name + "'").get(0));
-//	}
+	// public void addItemToList(List<Item> listItem, String name) {
+	// listItem.add(ItemDAO.getItem("FROM Item where name = '" + name +
+	// "'").get(0));
+	// }
 
-	public void saveBill(List<Item> listItem, List<ItemDetail> listItemDetail, Customer c, String type) {
+	public static void saveBill(List<Item> listItem, List<ItemDetail> listItemDetail, Customer c, String type) {
 		String nextBill = Data.getNextBill(type);
 		List<Item> list = new ArrayList<>();
-		Data.listItem.addAll(list);
+		list.addAll(Data.listItem);
 		List<Item> temp = new ArrayList<>();
-		listItem.addAll(temp);
+		temp.addAll(listItem);
 		Bill bill = new Bill();
 		bill.setBillNo(nextBill);
 		int totalPrice = 0;
@@ -95,9 +96,12 @@ public class MainController {
 
 		}
 		for (Item i : temp) {
-			Data.updateItem(i);
+			if (!Data.updateItem(i)) {
+				if (type.equals("N")) {
+					Data.listItem.add(i);
+				}
+			}
 		}
-
 	}
 
 	public List<Item> searchItemByName(List<Item> listItem, String name) {

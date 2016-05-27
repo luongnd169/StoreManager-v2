@@ -74,7 +74,7 @@ public class Main {
 	private JRadioButton rdbtnTenSP;
 	private JRadioButton rdbtnSoImei;
 	private JTextField txtSearch;
-	private JTextField txtTongTienKho;
+	public static JTextField txtTongTienKho;
 	private List<Item> listStorage;
 	private List<Fee> listFee;
 	private int tongTienKho;
@@ -125,14 +125,6 @@ public class Main {
 
 	public void setComboBoxTimSP(@SuppressWarnings("rawtypes") JComboBox comboBoxTimSP) {
 		this.comboBoxTimSP = comboBoxTimSP;
-	}
-
-	public List<Item> getListStorage() {
-		return listStorage;
-	}
-
-	public void setListStorage(List<Item> listStorage) {
-		this.listStorage = listStorage;
 	}
 
 	public JTable getTableXuat() {
@@ -346,15 +338,6 @@ public class Main {
 		btnThemMoi.setBounds(10, 85, 89, 23);
 		panelTonKho.add(btnThemMoi);
 
-		// JButton btnThmSnPhm = new JButton("Thêm sản phẩm");
-		// btnThmSnPhm.addActionListener(new ActionListener() {
-		// public void actionPerformed(ActionEvent arg0) {
-		//
-		// }
-		// });
-		// btnThmSnPhm.setBounds(638, 7, 109, 23);
-		// panelTonKho.add(btnThmSnPhm);
-
 		JPanel panelNhapXuat = new JPanel();
 		tabbedPane.addTab("Nhập/Xuất", null, panelNhapXuat, null);
 		panelNhapXuat.setLayout(null);
@@ -406,7 +389,7 @@ public class Main {
 		JButton btnLuu = new JButton("Lưu");
 		btnLuu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				saveSaveBill();
+				saveSaleBill();
 			}
 		});
 		btnLuu.setBounds(602, 470, 89, 23);
@@ -555,13 +538,15 @@ public class Main {
 		comboBoxImei = new JComboBox();
 		comboBoxImei.setBounds(250, 61, 154, 20);
 		panelXuat.add(comboBoxImei);
-		comboBoxImei.addActionListener(new ActionListener() {
+		if (comboBoxImei.getItemCount() > 0) {
+			comboBoxImei.addActionListener(new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				generateImportPrice();
-			}
-		});
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					generateImportPrice();
+				}
+			});
+		}
 
 		JButton btnHuy = new JButton("Hủy");
 		btnHuy.addActionListener(new ActionListener() {
@@ -935,8 +920,8 @@ public class Main {
 	}
 
 	public void initData() {
-		setListStorage(new ArrayList<Item>());
-		setListStorage(ItemDAO.getItemes());
+		listStorage = new ArrayList<Item>();
+		listStorage = ItemDAO.getItemes();
 
 		listFee = new ArrayList<>();
 		listFee = FeeDAO.getFees();
@@ -944,7 +929,7 @@ public class Main {
 
 		setListProvider(CustomerDAO.getCustomer("From Customer where provider = 1"));
 
-		for (Item i : Convert.returnListItem(getListStorage())) {
+		for (Item i : Convert.returnListItem(listStorage)) {
 			tongTienKho += Integer.parseInt(i.getPrice()) * i.getQuantity();
 		}
 
@@ -976,16 +961,16 @@ public class Main {
 			public void actionPerformed(ActionEvent e) {
 				if (e.getActionCommand().equals("Thêm")) {
 					addItem = new AddItem(listStorage);
+					Item selectedItem = listStorage.get(tableTonKho.getSelectedRow());
 					addItem.getComboBoxLoai().transferFocus();
 					addItem.getComboBoxLoai().setEnabled(false);
-					addItem.getTxtTenSanPham()
-							.setText(ItemTableModel.listItem.get(tableTonKho.getSelectedRow()).getName());
+					addItem.getTxtTenSanPham().setText(selectedItem.getName());
 					addItem.getTxtTenSanPham().setEditable(false);
 				} else if (e.getActionCommand().equals("Sửa")) {
-					Item selectedItem = getListStorage().get(tableTonKho.getSelectedRow());
-					selectedItem = ItemDAO.getItem(selectedItem.getItemId());
+					Item selectedItem = listStorage.get(tableTonKho.getSelectedRow());
+					// selectedItem = ItemDAO.getItem(selectedItem.getItemId());
 					List<ItemDetail> listDetail = Data.getItemDetailByStatus(selectedItem.getItemId(), true);
-					editItem = new EditItem(listDetail);
+					editItem = new EditItem(listDetail, listStorage);
 					editItem.getTxtMaSP().transferFocus();
 					editItem.getTxtMaSP().setEditable(false);
 					editItem.getTxtMaSP().setText(selectedItem.getItemId() + "");
@@ -1017,11 +1002,10 @@ public class Main {
 	public void resetStorage() {
 		listStorage = new ArrayList<>();
 		String type = comboKho.getSelectedItem().toString();
-		setListStorage(Data.getItemByType(type));
-		System.out.println("size: " + getListStorage().size());
-		tableTonKho.setModel(new ItemTableModel(getListStorage()));
+		listStorage = Data.getItemByType(type);
+		tableTonKho.setModel(new ItemTableModel(listStorage));
 		tongTienKho = 0;
-		for (Item i : getListStorage()) {
+		for (Item i : listStorage) {
 			tongTienKho += Integer.parseInt(i.getPrice()) * i.getQuantity();
 		}
 		txtTongTienKho.setText(Convert.numberToString(String.valueOf(tongTienKho)));
@@ -1030,11 +1014,11 @@ public class Main {
 	private void selectStorageEvent(ItemEvent e) {
 		listStorage = new ArrayList<>();
 		String type = e.getItem().toString();
-		setListStorage(Data.getItemByType(type));
-		System.out.println("size: " + getListStorage().size());
-		tableTonKho.setModel(new ItemTableModel(getListStorage()));
+		listStorage = Data.getItemByType(type);
+		System.out.println("size: " + listStorage.size());
+		tableTonKho.setModel(new ItemTableModel(listStorage));
 		tongTienKho = 0;
-		for (Item i : getListStorage()) {
+		for (Item i : listStorage) {
 			tongTienKho += Integer.parseInt(i.getPrice()) * i.getQuantity();
 		}
 		txtTongTienKho.setText(Convert.numberToString(String.valueOf(tongTienKho)));
@@ -1044,17 +1028,17 @@ public class Main {
 	private void searchItemStorageEvent(KeyEvent e) {
 		if (txtSearch.getText().trim().equals("")) {
 			listStorage = new ArrayList<>();
-			getListStorage().addAll(Data.listItem);
-			tableTonKho.setModel(new ItemTableModel(getListStorage()));
+			listStorage.addAll(Data.listItem);
+			tableTonKho.setModel(new ItemTableModel(listStorage));
 		} else {
 			if (rdbtnTenSP.isSelected()) {
-				setListStorage(controller.searchItemByName(Data.getItemByType(comboKho.getSelectedItem().toString()),
-						txtSearch.getText()));
-				tableTonKho.setModel(new ItemTableModel(getListStorage()));
+				listStorage = controller.searchItemByName(Data.getItemByType(comboKho.getSelectedItem().toString()),
+						txtSearch.getText());
+				tableTonKho.setModel(new ItemTableModel(listStorage));
 			} else {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					setListStorage(controller.searchItemByImei(txtSearch.getText()));
-					tableTonKho.setModel(new ItemTableModel(getListStorage()));
+					listStorage = controller.searchItemByImei(txtSearch.getText());
+					tableTonKho.setModel(new ItemTableModel(listStorage));
 				}
 			}
 		}
@@ -1093,15 +1077,19 @@ public class Main {
 				}
 
 			}
+			System.out.println(item.getItemId());
 			List<ItemDetail> listDetail = Data.getDetails(item.getItemId());
-			price = listDetail.get(0).getImportPrice();
-			txtGiaNhap.setText(Convert.numberToString(price));
-			for (ItemDetail id : listDetail) {
-				if (id.isStatus()) {
-					comboBoxImei.addItem(id.getImei());
+			if (listDetail.isEmpty()) {
+				JOptionPane.showMessageDialog(null, "Sản phẩm không còn hàng");
+			} else {
+				price = listDetail.get(0).getImportPrice();
+				txtGiaNhap.setText(Convert.numberToString(price));
+				for (ItemDetail id : listDetail) {
+					if (id.isStatus()) {
+						comboBoxImei.addItem(id.getImei());
+					}
 				}
 			}
-
 		}
 	}
 
@@ -1128,7 +1116,7 @@ public class Main {
 		}
 	}
 
-	private void saveSaveBill() {
+	private void saveSaleBill() {
 		Customer c = new Customer();
 		c.setName(comboBoxKhachHang.getSelectedItem().toString());
 		c.setPhone(txtDienThoai.getText());
@@ -1137,7 +1125,7 @@ public class Main {
 		if (chckbxM.isSelected()) {
 			Data.listPerson.add(c);
 		} else {
-			c.setCustomerId(Data.getCustomerByPhone(c.getName()).getCustomerId());
+			c.setCustomerId(Data.getCustomerByPhone(c.getPhone()).getCustomerId());
 		}
 		controller = new MainController();
 		controller.saveBill(listSaleItem, listSaleItemDetail, c, "X");
@@ -1145,8 +1133,8 @@ public class Main {
 		listSaleItem.removeAll(listSaleItem);
 		listSaleItemDetail.removeAll(listSaleItemDetail);
 		tableXuat.setModel(new ItemTableModel(listSaleItem));
-		Data.listItem.addAll(getListStorage());
-		tableTonKho.setModel(new ItemTableModel(getListStorage()));
+		Data.listItem.addAll(listStorage);
+		tableTonKho.setModel(new ItemTableModel(listStorage));
 		tableThongTin.setModel(new CustomerTableModel(Data.listPerson));
 		clearSale();
 	}
@@ -1234,8 +1222,8 @@ public class Main {
 		listImportItem.removeAll(listImportItem);
 		listImportItemDetail.removeAll(listImportItemDetail);
 		tableNhap.setModel(new ItemTableModel(listSaleItem));
-		Data.listItem.addAll(getListStorage());
-		tableTonKho.setModel(new ItemTableModel(getListStorage()));
+		Data.listItem.addAll(listStorage);
+		tableTonKho.setModel(new ItemTableModel(listStorage));
 		clearImport();
 
 	}

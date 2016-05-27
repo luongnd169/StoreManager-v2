@@ -4,10 +4,8 @@ import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 
-import dao.ItemDAO;
-import dao.ItemDetailDAO;
+import data.Data;
 import model.Item;
-import model.ItemDetail;
 
 public class ComboBoxModel {
 	
@@ -16,7 +14,7 @@ public class ComboBoxModel {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DefaultComboBoxModel getList(String name) {
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
-		List<Item> listItem = ItemDAO.getItemes();
+		List<Item> listItem = Data.listItem;
 		List<Item> searchItem = main.searchItemByName(listItem, name);
 		for (Item i : searchItem) {
 			model.addElement(i.getName());
@@ -24,15 +22,15 @@ public class ComboBoxModel {
 		return model;
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DefaultComboBoxModel getListByImei(String imei){
-		DefaultComboBoxModel model = new DefaultComboBoxModel();
-		List<ItemDetail> listItemDetail = ItemDetailDAO.getItemDetail("FROM ItemDetail WHERE imei LIKE '" + imei + "%'");
-		for (ItemDetail i : listItemDetail) {
-			model.addElement(i.getImei());
-		}
-		return model;
-	}
+//	@SuppressWarnings({ "rawtypes", "unchecked" })
+//	public DefaultComboBoxModel getListByImei(String imei){
+//		DefaultComboBoxModel model = new DefaultComboBoxModel();
+//		List<ItemDetail> listItemDetail = ItemDetailDAO.getItemDetail("FROM ItemDetail WHERE imei LIKE '" + imei + "%'");
+//		for (ItemDetail i : listItemDetail) {
+//			model.addElement(i.getImei());
+//		}
+//		return model;
+//	}
 	
 	@SuppressWarnings("rawtypes")
 	public DefaultComboBoxModel emptyList(){

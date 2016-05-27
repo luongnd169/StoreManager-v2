@@ -107,20 +107,43 @@ public class Data {
 
 	}
 
+	public static Customer getCustomer(int id, boolean provider) {
+		for (Customer c : listPerson) {
+			if (provider) {
+				if (c.getCustomerId() == id && provider) {
+					return c;
+				}
+			} else {
+				if (c.getCustomerId() == id && !provider) {
+					return c;
+				}
+			}
+		}
+		return null;
+	}
+
 	public static String getNextBill(String type) {
 		String nextBill = "";
 		String billNo = "";
 		int index = 0;
 		switch (type) {
 		case "X":
-			billNo = getSaleBill().get(getSaleBill().size() - 1).getBillNo();
-			index = Integer.parseInt(billNo.substring(1));
+			if (!getSaleBill().isEmpty()) {
+				billNo = getSaleBill().get(getSaleBill().size() - 1).getBillNo();
+				index = Integer.parseInt(billNo.substring(1));
+			} else {
+				index = 1;
+			}
 			nextBill = "X" + analyze(index);
 			break;
 
 		case "N":
-			billNo = getPurchaseBill().get(getPurchaseBill().size() - 1).getBillNo();
-			index = Integer.parseInt(billNo.substring(1));
+			if (!getPurchaseBill().isEmpty()) {
+				billNo = getPurchaseBill().get(getPurchaseBill().size() - 1).getBillNo();
+				index = Integer.parseInt(billNo.substring(1));
+			} else {
+				index = 1;
+			}
 			nextBill = "N" + analyze(index);
 			break;
 		}
@@ -215,6 +238,7 @@ public class Data {
 		for (Item i : listItem) {
 			if (item.getItemId() == i.getItemId()) {
 				i = item;
+				System.out.println(i.toString());
 				return true;
 			}
 		}
@@ -222,6 +246,6 @@ public class Data {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(getItemByType("Điện thoại").size());
+		System.out.println(getCustomerByPhone("11111").getName());
 	}
 }

@@ -14,9 +14,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import dao.CustomerDAO;
-import dao.ItemDAO;
-import dao.ItemDetailDAO;
+import controller.ItemTableModel;
+import data.Data;
 import model.Item;
 import model.ItemDetail;
 
@@ -107,15 +106,15 @@ public class EditItem extends JFrame {
 	/**
 	 * Create the application.
 	 */
-	public EditItem(List<ItemDetail> listDetail) {
-		initialize(listDetail);
+	public EditItem(List<ItemDetail> listDetail, List<Item> list) {
+		initialize(listDetail, list);
 	}
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void initialize(final List<ItemDetail> listDetail) {
+	private void initialize(final List<ItemDetail> listDetail, final List<Item> list) {
 
 		setBounds(500, 250, 600, 400);
 		getContentPane().setLayout(null);
@@ -213,7 +212,7 @@ public class EditItem extends JFrame {
 		getContentPane().add(comboBoxImei);
 		
 		if (!listDetail.isEmpty()) {
-			txtNhaCungCap.setText(CustomerDAO.getCustomer(listDetail.get(0).getProvider()).getName());
+			txtNhaCungCap.setText(Data.getCustomer(listDetail.get(0).getProvider(), true).getName());
 			txtNgayNhap.setText(listDetail.get(0).getImportDate() + "");
 			txtGiaNhap.setText(listDetail.get(0).getImportPrice());
 			for (ItemDetail id : listDetail) {
@@ -230,14 +229,14 @@ public class EditItem extends JFrame {
 					index = comboBoxImei.getSelectedIndex();
 				}
 				String imei = comboBoxImei.getEditor().getItem().toString();
-				if (ItemDetailDAO.getItemDetail("From ItemDetail where imei ='" + imei + "'").isEmpty()) {
+				if (Data.getItemDetailByImei(imei) == null) {
 					return;
 				} else {
-					ItemDetail id = ItemDetailDAO.getItemDetail("From ItemDetail where imei = '" + imei + "'").get(0);
+					ItemDetail id = Data.getItemDetailByImei(imei);
 					txtNhaCungCap.setText("");
 					txtGiaNhap.setText(id.getImportPrice());
 					txtNgayNhap.setText(id.getImportDate() + "");
-					txtNhaCungCap.setText(CustomerDAO.getCustomer(id.getProvider()).getName());
+					txtNhaCungCap.setText(Data.getCustomer(id.getProvider(), true).getName());
 				}
 			}
 		});
@@ -250,6 +249,7 @@ public class EditItem extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				 updateItem(listDetail, index);
+				 Main.tableTonKho.setModel(new ItemTableModel(list));
 			}
 		});
 
@@ -273,10 +273,10 @@ public class EditItem extends JFrame {
 			ItemDetail itemDetail = listDetail.get(index);
 			itemDetail.setImei(imei);
 			itemDetail.setImportPrice(price);
-			ItemDetailDAO.update(itemDetail);
-			Item item = ItemDAO.getItem(listDetail.get(0).getItemId());
+			Data.updateItemDetail(itemDetail);
+			Item item = Data.getItem(listDetail.get(0).getItemId());
 			item.setPrice(String.valueOf(countAvgPrice(itemDetail, listDetail)));
-			ItemDAO.update(item);
+			Data.updateItem(item);
 			JOptionPane.showMessageDialog(null, "Lưu thành công");
 			return true;
 		} else {

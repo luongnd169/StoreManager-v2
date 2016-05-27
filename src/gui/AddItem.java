@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -42,7 +41,6 @@ public class AddItem extends JFrame {
 	private JTextField txtSoLuong;
 	private JButton btnLuu;
 	private JButton btnHuy;
-	Main main = new Main();
 
 	public JTextField getTxtTenSanPham() {
 		return txtTenSanPham;
@@ -112,14 +110,14 @@ public class AddItem extends JFrame {
 		this.btnHuy = btnHuy;
 	}
 
-	public AddItem(List<Item> listStorage) {
-		initialize(listStorage);
+	public AddItem(List<Item> list) {
+		initialize(list);
 		tranfer();
 		disposeFrame();
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void initialize(final List<Item> listStorage) {
+	private void initialize(final List<Item> list) {
 
 		setBounds(100, 100, 400, 300);
 		getContentPane().setLayout(null);
@@ -198,8 +196,13 @@ public class AddItem extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				saveItem(listStorage);
-
+				saveItem();
+				Main.tableTonKho.setModel(new ItemTableModel(list));
+				int total = 0;
+				for(Item i : list){
+					total += Integer.parseInt(i.getPrice()) * i.getQuantity();
+				}
+				Main.txtTongTienKho.setText(Convert.numberToString(String.valueOf(total)));
 			}
 		});
 		getContentPane().add(btnLuu);
@@ -211,7 +214,6 @@ public class AddItem extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				dispose();
-				main.resetStorage();
 			}
 		});
 		getContentPane().add(btnHuy);
@@ -274,7 +276,7 @@ public class AddItem extends JFrame {
 
 	}
 
-	private void saveItem(List<Item> listStorage) {
+	private void saveItem() {
 		Integer itemId = -1;
 		String name = txtTenSanPham.getText();
 		String type = comboBoxLoai.getSelectedItem().toString();
@@ -301,20 +303,20 @@ public class AddItem extends JFrame {
 					imeis[i] = nextToken;
 				}
 
-				Item item = new Item();
-				item.setName(name);
-				item.setType(type);
 				if (txtTenSanPham.isEditable()) {
+					Item item = new Item();
+					item.setName(name);
+					item.setType(type);
 					itemId = ItemDAO.getNextId();
 					item.setItemId(itemId);
 					item.setQuantity(quantity);
 					item.setPrice(price);
 					Data.listItem.add(item);
 				} else {
-					Item i = Data.getItemByName(name);
-					itemId = i.getItemId();
-					item.setItemId(itemId);
-					item.setQuantity(i.getQuantity() + quantity);
+					Item item = Data.getItemByName(name);
+					itemId = item.getItemId();
+					// item.setItemId(itemId);
+					item.setQuantity(item.getQuantity() + quantity);
 					int totalPrice = 0;
 					List<ItemDetail> listDetail = Data.getDetails(itemId);
 					for (ItemDetail id : listDetail) {
@@ -322,10 +324,10 @@ public class AddItem extends JFrame {
 					}
 
 					int averagePrice = 0;
-					if (Integer.parseInt(i.getPrice()) == 0) {
+					if (Integer.parseInt(item.getPrice()) == 0) {
 						averagePrice = Integer.parseInt(price);
 					} else {
-						averagePrice = (totalPrice + Integer.parseInt(price)) / (listDetail.size() + 1);
+						averagePrice = (totalPrice + (Integer.parseInt(price) * quantity)) / (listDetail.size() + quantity);
 					}
 					item.setPrice(String.valueOf(averagePrice));
 					Data.updateItem(item);

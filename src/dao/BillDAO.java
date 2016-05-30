@@ -37,7 +37,6 @@ public class BillDAO {
 	}
 
 	public static List<Bill> getBill(String query) {
-		System.out.println(query);
 		try {
 			Session session = utils.getSession();
 			session.beginTransaction();

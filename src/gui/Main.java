@@ -43,7 +43,6 @@ import controller.ItemTableModel;
 import controller.MainController;
 import dao.CustomerDAO;
 import dao.FeeDAO;
-import dao.ItemDAO;
 import data.Data;
 import lib.Convert;
 import model.Customer;
@@ -102,7 +101,6 @@ public class Main {
 	@SuppressWarnings("unused")
 	private AddCustomer addCustomer;
 	private List<Customer> listProvider;
-	private JButton btnTaoMoiKho;
 	private JTextField txtGiaNhapNhap;
 	private JTextField txtTongTienNhap;
 	private JTextField txtSDTNhap;
@@ -268,11 +266,11 @@ public class Main {
 
 		JLabel lblKho = new JLabel("Kho");
 		lblKho.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		lblKho.setBounds(529, 11, 50, 25);
+		lblKho.setBounds(597, 11, 50, 25);
 		panelTonKho.add(lblKho);
 
 		comboKho = new JComboBox();
-		comboKho.setBounds(580, 14, 100, 20);
+		comboKho.setBounds(648, 14, 100, 20);
 		comboKho.addItem("Tất cả");
 		ItemListener itemListener = new ItemListener() {
 
@@ -309,41 +307,12 @@ public class Main {
 		panelTonKho.add(txtTongTienKho);
 		txtTongTienKho.setColumns(10);
 
-		btnTaoMoiKho = new JButton("Tạo mới");
-		btnTaoMoiKho.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				String storage = JOptionPane.showInputDialog(null, "Nhập tên kho muốn tạo");
-				int flag = 0;
-				for (int i = 0; i < getTypes().size(); i++) {
-					if (getTypes().get(i).equals(storage)) {
-					} else {
-						flag++;
-					}
-				}
-				if (flag == getTypes().size()) {
-					getTypes().add(storage);
-				}
-				initKho();
-			}
-		});
-		btnTaoMoiKho.setBounds(690, 13, 70, 23);
-		panelTonKho.add(btnTaoMoiKho);
-
 		JButton btnThemMoi = new JButton("Thêm mới");
 		btnThemMoi.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String name = JOptionPane.showInputDialog("Nhập tên sản phẩm");
-				String type = JOptionPane.showInputDialog("Nhập chủng loại");
-				Item item = new Item();
-				item.setName(name);
-				item.setType(type);
-				item.setPrice("0");
-				item.setQuantity(0);
-				item.setItemId(Data.getNextItemId());
-				Data.listItem.add(item);
-				listStorage.addAll(Data.listItem);
-				tableTonKho.setModel(new ItemTableModel(listStorage));
+				addNewItem();
 			}
+
 		});
 		btnThemMoi.setBounds(10, 85, 89, 23);
 		panelTonKho.add(btnThemMoi);
@@ -729,6 +698,18 @@ public class Main {
 
 		comboBoxLoaiNhap = new JComboBox();
 		comboBoxLoaiNhap.setBounds(82, 115, 86, 20);
+		comboBoxLoaiNhap.addItemListener(new ItemListener() {
+
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getItem().toString().equals("Điện thoại") || e.getItem().toString().equals("Máy tính bảng")) {
+					txtImeiNhap.setEditable(true);
+				} else {
+					txtImeiNhap.setEditable(false);
+				}
+
+			}
+		});
 		panelNhap.add(comboBoxLoaiNhap);
 
 		JPanel panelThuChi = new JPanel();
@@ -931,19 +912,19 @@ public class Main {
 
 	public void initData() {
 		listStorage = new ArrayList<Item>();
-		listStorage = ItemDAO.getItemes();
+		listStorage.addAll(Data.listItem);
 
 		listFee = new ArrayList<>();
-		listFee = FeeDAO.getFees();
+		listFee.addAll(Data.listFee);
 		Convert.convertListFee(listFee);
 
-		setListProvider(CustomerDAO.getCustomer("From Customer where provider = 1"));
+		setListProvider(Data.getCustomer(true));
 
-		for (Item i : Convert.returnListItem(listStorage)) {
+		for (Item i : listStorage) {
 			tongTienKho += Integer.parseInt(i.getPrice()) * i.getQuantity();
 		}
 
-		setTypes(ItemDAO.getTypes());
+		setTypes(Data.getTypes());
 
 	}
 
@@ -1054,8 +1035,13 @@ public class Main {
 	}
 
 	private void countProfits() {
-		txtLoiNhuan.setText(Convert.numberToString(String.valueOf(Integer.parseInt(txtGiaXuat.getText())
-				- Integer.parseInt(Convert.stringToNumber(txtGiaNhap.getText())))));
+		try {
+			txtLoiNhuan.setText(Convert.numberToString(String.valueOf(Integer.parseInt(txtGiaXuat.getText())
+					- Integer.parseInt(Convert.stringToNumber(txtGiaNhap.getText())))));
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(null, "Dữ liệu sai");
+		}
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1184,6 +1170,8 @@ public class Main {
 		String imei = "";
 		if (type.equals("Điện thoại") || type.equals("Máy tính bảng")) {
 			imei = txtImeiNhap.getText();
+		} else {
+			imei = Convert.formatDateTime(new Date());
 		}
 		if (!txtGiaNhapNhap.getText().equals("")) {
 			String price = txtGiaNhapNhap.getText();
@@ -1192,17 +1180,6 @@ public class Main {
 			if (Data.getItemByName(name) != null) {
 				item.setItemId(Data.getItemByName(name).getItemId());
 			} else {
-				// if (!listImportItem.isEmpty()) {
-				// for (Item i : listImportItem) {
-				// if (!item.getName().equals(i.getName())) {
-				// item.setItemId(Data.getNextItemId());
-				// } else {
-				// item.setItemId(i.getItemId());
-				// }
-				// }
-				// } else {
-				// item.setItemId(Data.getNextItemId());
-				// }
 				JOptionPane.showMessageDialog(null, "Sản phẩm không tồn tại");
 				return;
 			}
@@ -1447,9 +1424,32 @@ public class Main {
 			comboBoxLoaiNhap.removeAllItems();
 		}
 		comboKho.addItem("Tất cả");
-		for (String s : getTypes()) {
+		for (String s : types) {
 			comboKho.addItem(s);
 			comboBoxLoaiNhap.addItem(s);
 		}
+	}
+
+	private void addNewItem() {
+		String name = JOptionPane.showInputDialog("Nhập tên sản phẩm");
+		String type = JOptionPane.showInputDialog("Nhập chủng loại");
+		if (name != null || type != null) {
+			if (!name.equals(Data.getItemByName(name))) {
+				Item item = new Item();
+				item.setName(name);
+				item.setType(type);
+				item.setPrice("0");
+				item.setQuantity(0);
+				item.setItemId(Data.getNextItemId());
+				Data.listItem.add(item);
+				listStorage.addAll(Data.listItem);
+				tableTonKho.setModel(new ItemTableModel(listStorage));
+				types = Data.getTypes();
+				initKho();
+			} else {
+				JOptionPane.showInputDialog("Sản phẩm đã tồn tại");
+			}
+		}
+
 	}
 }

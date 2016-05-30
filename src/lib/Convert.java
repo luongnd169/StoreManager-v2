@@ -30,14 +30,15 @@ public class Convert {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 		return dateFormat.format(date);
 	}
+	
+	public static String formatDateTime(Date date){
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy '&' hh:mm:ss");
+		return dateFormat.format(date);
+	}
 
 	public static String formatDateSQL(Date date) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		return dateFormat.format(date);
-	}
-
-	public static void main(String[] args) {
-		System.out.println(numberToString(""));
 	}
 
 	public static List<Item> convertListItem(List<Item> list) {

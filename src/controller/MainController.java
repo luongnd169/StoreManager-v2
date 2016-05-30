@@ -99,10 +99,7 @@ public class MainController {
 			if (!Data.updateItem(i)) {
 				if (type.equals("N")) {
 					Data.listItem.add(i);
-					System.out.println("add" + i.toString());
 				}
-			} else {
-				System.out.println("update" + i.toString());
 			}
 		}
 	}

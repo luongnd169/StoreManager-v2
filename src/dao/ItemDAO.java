@@ -2,7 +2,6 @@ package dao;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.hibernate.Session;
 
@@ -48,7 +47,6 @@ public class ItemDAO {
 	}
 
 	public static List<Item> getItem(String query) {
-		System.out.println(query);
 		try {
 			Session session = utils.getSession();
 			session.beginTransaction();
@@ -76,22 +74,6 @@ public class ItemDAO {
 			return -1;
 		}
 		return list.get(0).getItemId();
-	}
-
-	public static List<String> getTypes() {
-		String type = "";
-		List<Item> list = getItemes();
-		for (Item i : list) {
-			if (!type.contains(i.getType())) {
-				type += "-" + i.getType();
-			}
-		}
-		StringTokenizer st = new StringTokenizer(type, "-");
-		List<String> types = new ArrayList<>();
-		while (st.hasMoreTokens()) {
-			types.add(st.nextToken());
-		}
-		return types;
 	}
 
 	public static void insert(Item Item) {

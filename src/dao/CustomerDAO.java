@@ -38,7 +38,6 @@ public class CustomerDAO {
 	}
 
 	public static List<Customer> getCustomer(String query) {
-		System.out.println(query);
 		try {
 			Session session = utils.getSession();
 			session.beginTransaction();

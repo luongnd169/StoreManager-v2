@@ -37,7 +37,6 @@ public class ItemDetailDAO {
 	}
 
 	public static List<ItemDetail> getItemDetail(String query) {
-		System.out.println(query);
 		try {
 			Session session = utils.getSession();
 			session.beginTransaction();

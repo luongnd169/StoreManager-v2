@@ -16,9 +16,12 @@ public class ComboBoxModel {
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		List<Item> listItem = Data.listItem;
 		List<Item> searchItem = main.searchItemByName(listItem, name);
-		for (Item i : searchItem) {
-			model.addElement(i.getName());
+		if(!searchItem.isEmpty()){
+			for (Item i : searchItem) {
+				model.addElement(i.getName());
+			}
 		}
+		
 		return model;
 	}
 	

@@ -296,10 +296,7 @@ public class AddItem extends JFrame {
 				return;
 			} else {
 				for (int i = 0; i < imeis.length; i++) {
-					System.out.println("length " + imeis.length);
-					System.out.println("i = " + i);
 					String nextToken = st.nextToken();
-					System.out.println(nextToken);
 					imeis[i] = nextToken;
 				}
 

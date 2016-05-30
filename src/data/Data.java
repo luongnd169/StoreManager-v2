@@ -2,6 +2,7 @@ package data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import dao.BillDAO;
 import dao.BillDetailDAO;
@@ -250,7 +251,52 @@ public class Data {
 		return false;
 	}
 
+	public static List<String> getTypes() {
+		String type = "";
+		for (Item i : listItem) {
+			if (isContainType(type, i.getType())) {
+				type += "-" + i.getType();
+			}
+		}
+		StringTokenizer st = new StringTokenizer(type, "-");
+		List<String> types = new ArrayList<>();
+		while (st.hasMoreTokens()) {
+			types.add(st.nextToken());
+		}
+		return types;
+	}
+
+	public static boolean isContainType(String types, String type) {
+		StringTokenizer st = new StringTokenizer(types, "-");
+		boolean check = true;
+		while (st.hasMoreTokens()) {
+			if (type.equals(st.nextToken())) {
+				check = false;
+				break;
+			} else {
+				check = true;
+			}
+		}
+		return check;
+	}
+
+	public static String getNextImei(String itemName) {
+		int imei = 0;
+		for (Item i : listItem) {
+			if (i.getName().equals(itemName)) {
+				for (ItemDetail id : listItemDetail) {
+					if (i.getItemId() == id.getItemId()) {
+						if (Integer.parseInt(id.getImei()) > imei) {
+							imei = Integer.parseInt(id.getImei());
+						}
+					}
+				}
+			}
+		}
+
+		return String.valueOf(imei + 1);
+	}
+
 	public static void main(String[] args) {
-		System.out.println(getNextItemId());
 	}
 }

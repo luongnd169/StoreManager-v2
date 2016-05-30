@@ -332,7 +332,17 @@ public class Main {
 		JButton btnThemMoi = new JButton("Thêm mới");
 		btnThemMoi.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				addItem = new AddItem(listStorage);
+				String name = JOptionPane.showInputDialog("Nhập tên sản phẩm");
+				String type = JOptionPane.showInputDialog("Nhập chủng loại");
+				Item item = new Item();
+				item.setName(name);
+				item.setType(type);
+				item.setPrice("0");
+				item.setQuantity(0);
+				item.setItemId(Data.getNextItemId());
+				Data.listItem.add(item);
+				listStorage.addAll(Data.listItem);
+				tableTonKho.setModel(new ItemTableModel(listStorage));
 			}
 		});
 		btnThemMoi.setBounds(10, 85, 89, 23);
@@ -1002,8 +1012,6 @@ public class Main {
 	public void resetStorage() {
 		listStorage = new ArrayList<>();
 		String type = comboKho.getSelectedItem().toString();
-		System.out.println("A " + Data.getItemByType(type).size());
-		System.out.println("B " + Data.listItem.size());
 		listStorage = Data.getItemByType(type);
 		tableTonKho.setModel(new ItemTableModel(listStorage));
 		tongTienKho = 0;
@@ -1017,7 +1025,6 @@ public class Main {
 		listStorage = new ArrayList<>();
 		String type = e.getItem().toString();
 		listStorage = Data.getItemByType(type);
-		System.out.println("size: " + listStorage.size());
 		tableTonKho.setModel(new ItemTableModel(listStorage));
 		tongTienKho = 0;
 		for (Item i : listStorage) {
@@ -1079,7 +1086,6 @@ public class Main {
 				}
 
 			}
-			System.out.println(item.getItemId());
 			List<ItemDetail> listDetail = Data.getDetails(item.getItemId());
 			if (listDetail.isEmpty()) {
 				JOptionPane.showMessageDialog(null, "Sản phẩm không còn hàng");
@@ -1136,11 +1142,9 @@ public class Main {
 		tableXuat.setModel(new ItemTableModel(listSaleItem));
 		listStorage = new ArrayList<>();
 		listStorage.addAll(Data.listItem);
-		System.out.println(Data.listItem.size());
 		tableTonKho.setModel(new ItemTableModel(listStorage));
 		tableThongTin.setModel(new CustomerTableModel(Data.listPerson));
 		clearSale();
-		System.out.println(listStorage.size());
 	}
 
 	public void clearSale() {
@@ -1184,12 +1188,24 @@ public class Main {
 		if (!txtGiaNhapNhap.getText().equals("")) {
 			String price = txtGiaNhapNhap.getText();
 			Item item = new Item();
+			item.setName(name);
 			if (Data.getItemByName(name) != null) {
 				item.setItemId(Data.getItemByName(name).getItemId());
 			} else {
-				item.setItemId(Data.getNextItemId());
+				// if (!listImportItem.isEmpty()) {
+				// for (Item i : listImportItem) {
+				// if (!item.getName().equals(i.getName())) {
+				// item.setItemId(Data.getNextItemId());
+				// } else {
+				// item.setItemId(i.getItemId());
+				// }
+				// }
+				// } else {
+				// item.setItemId(Data.getNextItemId());
+				// }
+				JOptionPane.showMessageDialog(null, "Sản phẩm không tồn tại");
+				return;
 			}
-			item.setName(name);
 			item.setType(type);
 			item.setQuantity(quantity);
 			item.setPrice(Convert.numberToString(price));

@@ -244,7 +244,6 @@ public class Data {
 			if (item.getItemId() == i.getItemId()) {
 				i.setPrice(item.getPrice());
 				i.setQuantity(i.getQuantity());
-				System.out.println("1 " + Data.listItem.get(0).toString());
 				return true;
 			}
 		}

@@ -1,8 +1,13 @@
 package data;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import javax.swing.JOptionPane;
 
 import dao.BillDAO;
 import dao.BillDetailDAO;
@@ -297,6 +302,45 @@ public class Data {
 		return String.valueOf(imei + 1);
 	}
 
+	public static List<Fee> getFeesBefore(String date) {
+		List<Fee> list = new ArrayList<>();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		try {
+			Date to = sdf.parse(date);
+			for (Fee f : listFee) {
+				if (f.getDate().before(to)) {
+					list.add(f);
+				}
+			}
+		} catch (ParseException e) {
+			JOptionPane.showMessageDialog(null, "Dữ liệu sai");
+		}
+
+		return list;
+	}
+
+	public static List<Fee> getFees(String from, String to) {
+		List<Fee> list = new ArrayList<>();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		try {
+			Date dFrom = sdf.parse(from);
+			Date dTo = sdf.parse(to);
+			for (Fee f : listFee) {
+				if (sdf.parse(sdf.format(f.getDate())).equals(dFrom)
+						|| sdf.parse(sdf.format(f.getDate())).equals(dTo)) {
+					list.add(f);
+				} else if (f.getDate().after(dFrom) && f.getDate().before(dTo)) {
+					list.add(f);
+				}
+			}
+		} catch (ParseException e) {
+			JOptionPane.showMessageDialog(null, "Dữ liệu sai");
+		}
+
+		return list;
+	}
+
 	public static void main(String[] args) {
+
 	}
 }

@@ -1,6 +1,7 @@
 package lib;
 
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,8 +31,8 @@ public class Convert {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 		return dateFormat.format(date);
 	}
-	
-	public static String formatDateTime(Date date){
+
+	public static String formatDateTime(Date date) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy '&' hh:mm:ss");
 		return dateFormat.format(date);
 	}
@@ -39,6 +40,17 @@ public class Convert {
 	public static String formatDateSQL(Date date) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		return dateFormat.format(date);
+	}
+
+	public static Date formatDate(Date date, String type) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat(type);
+		try {
+			return dateFormat.parse(dateFormat.format(date));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public static List<Item> convertListItem(List<Item> list) {
@@ -83,22 +95,26 @@ public class Convert {
 	}
 
 	@SuppressWarnings("deprecation")
-	public static String getDate(String date) {
+	public static String getDate(String date, boolean increase) {
 		StringTokenizer st = new StringTokenizer(date, " ,-");
 		int index = st.countTokens();
-
-		String day = "";
-		String month = "";
-		String year = "";
+		int day = 0;
+		int month = 0;
+		int year = 0;
 		if (index == 2) {
-			day = st.nextToken();
-			month = st.nextToken();
-			year = new Date().getYear() + 1900 + "";
+			day = Integer.parseInt(st.nextToken());
+			month = Integer.parseInt(st.nextToken());
+			year = new Date().getYear() + 1900;
 		} else if (index == 3) {
-			day = st.nextToken();
-			month = st.nextToken();
-			year = st.nextToken();
+			day = Integer.parseInt(st.nextToken());
+			month = Integer.parseInt(st.nextToken());
+			year = Integer.parseInt(st.nextToken());
+		} else {
+			return "";
 		}
+		if (increase) {
+			day++;
+		} 
 		String formatedDate = year + "-" + month + "-" + day;
 		return formatedDate;
 	}

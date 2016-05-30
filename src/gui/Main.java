@@ -109,7 +109,6 @@ public class Main {
 	private JTextField txtImeiNhap;
 	private JButton btnThemNhap;
 	private JButton btnLuuNhap;
-	private JCheckBox checkBoxNhap;
 	private JButton btnHuyNhap;
 	private static List<String> types;
 	private List<Item> listImportItem = new ArrayList<>();
@@ -450,13 +449,13 @@ public class Main {
 
 		txtDienThoai = new JTextField();
 		txtDienThoai.setColumns(10);
-		txtDienThoai.setBounds(615, 61, 90, 20);
+		txtDienThoai.setBounds(615, 61, 126, 20);
 		txtDienThoai.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 					String phone = txtDienThoai.getText().trim();
-					findCustomer(phone);
+					findCustomer(phone, false);
 				}
 			}
 		});
@@ -471,7 +470,7 @@ public class Main {
 		txtDiaChi = new JTextField();
 		txtDiaChi.setEditable(false);
 		txtDiaChi.setColumns(10);
-		txtDiaChi.setBounds(615, 115, 90, 20);
+		txtDiaChi.setBounds(615, 115, 126, 20);
 		panelXuat.add(txtDiaChi);
 
 		comboBoxKhachHang = new JComboBox();
@@ -625,6 +624,15 @@ public class Main {
 		txtSDTNhap = new JTextField();
 		txtSDTNhap.setColumns(10);
 		txtSDTNhap.setBounds(602, 61, 139, 20);
+		txtSDTNhap.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					String phone = txtSDTNhap.getText().trim();
+					findCustomer(phone, true);
+				}
+			}
+		});
 		panelNhap.add(txtSDTNhap);
 
 		JLabel lblDiaChiNhap = new JLabel("Địa chỉ");
@@ -640,9 +648,9 @@ public class Main {
 		panelNhap.add(txtDiaChiNhap);
 
 		comboBoxNCC = new JComboBox();
-		comboBoxNCC.setBounds(602, 13, 90, 20);
+		comboBoxNCC.setBounds(602, 13, 139, 20);
 		panelNhap.add(comboBoxNCC);
-		List<Customer> listProvider = CustomerDAO.getCustomer("From Customer where provider = 1");
+		List<Customer> listProvider = Data.getCustomer(true);
 		if (!listProvider.isEmpty()) {
 			for (Customer c : listProvider) {
 				comboBoxNCC.addItem(c.getName());
@@ -660,10 +668,6 @@ public class Main {
 
 			}
 		});
-
-		checkBoxNhap = new JCheckBox("Mới");
-		checkBoxNhap.setBounds(710, 9, 50, 23);
-		panelNhap.add(checkBoxNhap);
 
 		JLabel lblImeiNhap = new JLabel("Imei");
 		lblImeiNhap.setHorizontalAlignment(SwingConstants.LEFT);
@@ -916,7 +920,6 @@ public class Main {
 
 		listFee = new ArrayList<>();
 		listFee.addAll(Data.listFee);
-		Convert.convertListFee(listFee);
 
 		setListProvider(Data.getCustomer(true));
 
@@ -929,7 +932,8 @@ public class Main {
 	}
 
 	private void setValues() {
-		List<Fee> list = FeeDAO.getFees();
+		List<Fee> list = new ArrayList<>();
+		list.addAll(Data.listFee);
 		int tongThu = 0;
 		int tongChi = 0;
 		for (Fee e : list) {
@@ -959,7 +963,6 @@ public class Main {
 					addItem.getTxtTenSanPham().setEditable(false);
 				} else if (e.getActionCommand().equals("Sửa")) {
 					Item selectedItem = listStorage.get(tableTonKho.getSelectedRow());
-					// selectedItem = ItemDAO.getItem(selectedItem.getItemId());
 					List<ItemDetail> listDetail = Data.getItemDetailByStatus(selectedItem.getItemId(), true);
 					editItem = new EditItem(listDetail, listStorage);
 					editItem.getTxtMaSP().transferFocus();
@@ -1308,13 +1311,14 @@ public class Main {
 			} else {
 				fee.setType(false);
 			}
-			fee.setDate(new Date());
-			FeeDAO.insert(fee);
+			fee.setDate(Convert.formatDate(new Date(), "yyyy-MM-dd"));
+			Data.listFee.add(fee);
 			JOptionPane.showMessageDialog(null, "Lưu thành công");
 			txtMuc.setText("");
 			txtSoTien.setText("");
-			listFee = FeeDAO.getFees();
-			tableLichSu.setModel(new FeeTableModel(Convert.convertListFee(listFee)));
+			listFee = new ArrayList<>();
+			listFee.addAll(Data.listFee);
+			tableLichSu.setModel(new FeeTableModel(listFee));
 			setValues();
 		} else {
 			txtMuc.requestFocus();
@@ -1325,41 +1329,39 @@ public class Main {
 
 	private void searchFeeFrom(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-			for (int i = 0; i < listFee.size(); i++) {
-				listFee.remove(i);
-			}
-			from = Convert.getDate(txtFrom.getText().toString().trim());
+			listFee.removeAll(listFee);
+			from = Convert.getDate(txtFrom.getText().toString().trim(), false);
 			if (txtTo.getText().equals(Convert.formatDate(new Date()))) {
-				to = Convert.getDate(Convert.formatDate(new Date()));
+				to = Convert.getDate(Convert.formatDate(new Date()), true);
 			} else {
-				to = Convert.getDate(txtTo.getText().toString().trim());
+				to = Convert.getDate(txtTo.getText().toString().trim(), true);
 			}
 			if (from.equals("")) {
-				listFee = FeeDAO.getFee("From Fee where day <= '" + to + "'");
-			} else if (!FeeDAO.getByDate(from, to).isEmpty()) {
-				listFee = FeeDAO.getByDate(from, to);
-				tableLichSu.setModel(new FeeTableModel(Convert.convertListFee(listFee)));
+				listFee = Data.getFeesBefore(to);
+			} else if (!Data.getFees(from, to).isEmpty()) {
+				listFee = Data.getFees(from, to);
 			}
+			tableLichSu.setModel(new FeeTableModel(listFee));
 		}
 	}
 
 	private void searchFeeTo(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 			for (int i = 0; i < listFee.size(); i++) {
-				listFee.remove(i);
+				listFee.removeAll(listFee);
 			}
-			from = Convert.getDate(txtFrom.getText().toString().trim());
+			from = Convert.getDate(txtFrom.getText().toString().trim(), false);
 			if (txtTo.getText().equals(Convert.formatDate(new Date()))) {
-				to = Convert.getDate(Convert.formatDate(new Date()));
+				to = Convert.getDate(Convert.formatDate(new Date()), true);
 			} else {
-				to = Convert.getDate(txtTo.getText().toString().trim());
+				to = Convert.getDate(txtTo.getText().toString().trim(), true);
 			}
 			if (from.equals("")) {
-				listFee = FeeDAO.getFee("From Fee where day <= '" + to + "'");
-			} else if (!FeeDAO.getByDate(from, to).isEmpty()) {
-				listFee = FeeDAO.getByDate(from, to);
-				tableLichSu.setModel(new FeeTableModel(Convert.convertListFee(listFee)));
+				listFee = Data.getFeesBefore(to);
+			} else if (!Data.getFees(from, to).isEmpty()) {
+				listFee = Data.getFees(from, to);
 			}
+			tableLichSu.setModel(new FeeTableModel(listFee));
 		}
 	}
 
@@ -1403,10 +1405,15 @@ public class Main {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void findCustomer(String phone) {
-		List<Customer> list = CustomerDAO.getCustomer("From Customer where phone = '" + phone + "' and provider = 0");
-		if (!list.isEmpty()) {
-			Customer c = list.get(0);
+	private void findCustomer(String phone, boolean provider) {
+		Customer c = Data.getCustomerByPhone(phone);
+		if (provider) {
+			if (comboBoxNCC.getItemCount() != -1) {
+				comboBoxNCC.removeAllItems();
+				comboBoxNCC.addItem(c.getName());
+			}
+			txtDiaChiNhap.setText(c.getAddress());
+		} else {
 			if (comboBoxKhachHang.getItemCount() != -1) {
 				comboBoxKhachHang.removeAllItems();
 				comboBoxKhachHang.addItem(c.getName());

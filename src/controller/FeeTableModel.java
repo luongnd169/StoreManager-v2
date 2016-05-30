@@ -33,7 +33,7 @@ public class FeeTableModel extends AbstractTableModel {
 			for (int i = 0; i < list.size(); i++) {
 				Vector dataRow = new Vector(count);
 				dataRow.addElement(list.get(i).getName());
-				dataRow.addElement(list.get(i).getValue());
+				dataRow.addElement(Convert.numberToString(list.get(i).getValue()));
 				if (list.get(i).isType()) {
 					dataRow.addElement("Thu");
 				} else {

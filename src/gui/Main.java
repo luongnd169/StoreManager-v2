@@ -42,7 +42,6 @@ import controller.FeeTableModel;
 import controller.ItemTableModel;
 import controller.MainController;
 import dao.CustomerDAO;
-import dao.FeeDAO;
 import data.Data;
 import lib.Convert;
 import model.Customer;
@@ -114,6 +113,7 @@ public class Main {
 	private List<Item> listImportItem = new ArrayList<>();
 	private List<ItemDetail> listImportItemDetail = new ArrayList<>();
 	private JTable tableNhap;
+	private JTable tableThongKe;
 
 	@SuppressWarnings("rawtypes")
 	public JComboBox getComboBoxTimSP() {
@@ -911,6 +911,17 @@ public class Main {
 		JScrollPane scrollPaneThongTin = new JScrollPane(tableThongTin);
 		scrollPaneThongTin.setBounds(10, 119, 750, 395);
 		panelThongTin.add(scrollPaneThongTin);
+		
+		JPanel panelThongKe = new JPanel();
+		tabbedPane.addTab("Thống kê", null, panelThongKe, null);
+		panelThongKe.setLayout(null);
+		
+		JScrollPane scrollPaneThongKe = new JScrollPane((Component) null);
+		scrollPaneThongKe.setBounds(10, 126, 750, 395);
+		panelThongKe.add(scrollPaneThongKe);
+		
+		tableThongKe = new JTable();
+		scrollPaneThongKe.setViewportView(tableThongKe);
 
 	}
 
@@ -1366,8 +1377,8 @@ public class Main {
 	}
 
 	private void showAllFees() {
-		listFee = FeeDAO.getFees();
-		tableLichSu.setModel(new FeeTableModel(Convert.convertListFee(listFee)));
+		listFee = Data.listFee;
+		tableLichSu.setModel(new FeeTableModel(listFee));
 		setValues();
 	}
 
@@ -1393,7 +1404,7 @@ public class Main {
 
 	@SuppressWarnings("unchecked")
 	public static void reloadCustomer() {
-		List<Customer> listCustomer = CustomerDAO.getCustomer("From Customer where provider = 0");
+		List<Customer> listCustomer = Data.getCustomer(false);
 		if (!listCustomer.isEmpty()) {
 			comboBoxKhachHang.removeAllItems();
 			for (Customer c : listCustomer) {
